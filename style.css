@@ -173,31 +173,31 @@ body nav .search a {
 }
 
 .main-mid .sport-buttons .sport-button1 {
-  background: url(img/cricket-bg.png);
+  background: url(cricket-bg.png);
   background-size: cover;
   background-position: center;
 }
 
 .main-mid .sport-buttons .sport-button2 {
-  background: url(img/football-bg.png);
+  background: url(football-bg.png);
   background-size: cover;
   background-position: center;
 }
 
 .main-mid .sport-buttons .sport-button3 {
-  background: url(img/tennis-bg.png);
+  background: url(tennis-bg.png);
   background-size: cover;
   background-position: center;
 }
 
 .main-mid .sport-buttons .sport-button4 {
-  background: url(img/horse-bg.png);
+  background: url(horse-bg.png);
   background-size: cover;
   background-position: center;
 }
 
 .main-mid .sport-buttons .sport-button5 {
-  background: url(img/greyhound-bg.png);
+  background: url(greyhound-bg.png);
   background-size: cover;
   background-position: center;
 }
@@ -543,4 +543,5 @@ footer .flast {
   text-align: center;
   color: grey;
   padding-top: 50px;
+
 }
