@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" href="img/favicon.png">
+  <title> Lotus 365/Color Prediction Casino</title>
+  <style>
+    :root {
+      --bg-a: #070b1a;
+      --bg-b: #0e1530;
+      --panel: rgba(10, 17, 37, 0.92);
+      --panel-soft: rgba(18, 29, 58, 0.86);
+      --line: rgba(165, 188, 232, 0.2);
+      --text: #eaf2ff;
+      --muted: #a8bbdd;
+      --red: #ff5a7c;
+      --green: #31d690;
+      --violet: #ba82ff;
+      --amber: #ffc95f;
+      --cyan: #57d7ff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 15% 10%, rgba(255, 90, 124, 0.26), transparent 35%),
+        radial-gradient(circle at 80% 0%, rgba(186, 130, 255, 0.24), transparent 40%),
+        radial-gradient(circle at 50% 100%, rgba(87, 215, 255, 0.2), transparent 45%),
+        linear-gradient(145deg, var(--bg-a), var(--bg-b));
+      background-size: 120% 120%;
+      animation: hueShift 14s ease-in-out infinite alternate;
+      padding: 16px;
+    }
+
+    @keyframes hueShift {
+      from {
+        filter: hue-rotate(0deg);
+      }
+
+      to {
+        filter: hue-rotate(22deg);
+      }
+    }
+
+    .app {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 14px;
+    }
+
+    .top-header {
+      max-width: 1100px;
+      margin: 0 auto 12px;
+      padding: 12px 16px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: linear-gradient(120deg, rgba(12, 21, 44, 0.95), rgba(21, 35, 67, 0.9));
+      text-align: center;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
+    }
+
+    .top-header img {
+      height: 38px;
+      width: auto;
+      display: block;
+      margin: 0 auto;
+      object-fit: contain;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      backdrop-filter: blur(8px);
+      box-shadow:
+        0 16px 36px rgba(2, 6, 23, 0.56),
+        0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+    }
+
+    .left {
+      padding: 14px;
+      display: grid;
+      gap: 12px;
+      align-content: start;
+    }
+
+    .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .title {
+      font-size: 1.22rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      background: linear-gradient(90deg, #ffd166, #ff5e84, #8a7bff, #54e2ff);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .round-pill {
+      background: var(--panel-soft);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 6px 11px;
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 0.87rem;
+    }
+
+    .stage {
+      position: relative;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(255, 90, 124, 0.2), transparent 45%),
+        radial-gradient(circle at 80% 80%, rgba(87, 215, 255, 0.22), transparent 42%),
+        rgba(9, 17, 35, 0.78);
+      overflow: hidden;
+      min-height: 220px;
+    }
+
+    .status {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 0.92rem;
+    }
+
+    .timer {
+      font-size: 1.7rem;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+    }
+
+    .draw-box {
+      margin-top: 14px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px;
+      text-align: center;
+      background: linear-gradient(145deg, rgba(11, 20, 42, 0.95), rgba(18, 30, 58, 0.92));
+      box-shadow: 0 0 24px rgba(87, 215, 255, 0.12) inset;
+    }
+
+    .draw-label {
+      color: var(--muted);
+      font-size: 0.83rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .draw-result {
+      margin-top: 8px;
+      min-height: 56px;
+      display: grid;
+      place-items: center;
+      font-size: 1.45rem;
+      font-weight: 800;
+      border-radius: 10px;
+      transition: all 0.28s ease;
+      border: 1px solid transparent;
+      background: rgba(42, 60, 95, 0.36);
+      text-shadow: 0 0 12px rgba(255, 255, 255, 0.22);
+    }
+
+    .draw-result.red {
+      background: rgba(239, 68, 68, 0.22);
+      border-color: rgba(239, 68, 68, 0.55);
+      color: #fecaca;
+    }
+
+    .draw-result.green {
+      background: rgba(34, 197, 94, 0.22);
+      border-color: rgba(34, 197, 94, 0.55);
+      color: #bbf7d0;
+    }
+
+    .draw-result.violet {
+      background: rgba(168, 85, 247, 0.22);
+      border-color: rgba(168, 85, 247, 0.55);
+      color: #e9d5ff;
+    }
+
+    .choices {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .choice {
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      padding: 10px;
+      text-align: center;
+      background: linear-gradient(180deg, rgba(23, 35, 66, 0.95), rgba(12, 22, 45, 0.95));
+      cursor: pointer;
+      font-weight: 700;
+      transition: transform 0.12s ease, border-color 0.12s ease, filter 0.12s ease;
+      user-select: none;
+    }
+
+    .choice:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.08);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .choice.selected {
+      border-color: var(--amber);
+      box-shadow: 0 0 0 1px var(--amber) inset, 0 0 18px rgba(255, 207, 90, 0.35);
+    }
+
+    .choice.red {
+      color: #ffd0da;
+      background: linear-gradient(160deg, rgba(255, 90, 124, 0.34), rgba(92, 20, 43, 0.62));
+    }
+
+    .choice.green {
+      color: #d1ffe9;
+      background: linear-gradient(160deg, rgba(49, 214, 144, 0.3), rgba(14, 76, 54, 0.62));
+    }
+
+    .choice.violet {
+      color: #f0e0ff;
+      background: linear-gradient(160deg, rgba(186, 130, 255, 0.3), rgba(47, 28, 80, 0.62));
+    }
+
+    .controls {
+      display: grid;
+      gap: 9px;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    label {
+      color: var(--muted);
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    input {
+      width: 100%;
+      margin-top: 6px;
+      background: rgba(9, 16, 34, 0.92);
+      border: 1px solid var(--line);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 10px;
+      font-size: 1rem;
+      outline: none;
+    }
+
+    input[type="number"] {
+      appearance: textfield;
+      -moz-appearance: textfield;
+    }
+
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    .quick {
+      grid-column: 1 / -1;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .quick button,
+    .actions button {
+      border: 0;
+      border-radius: 10px;
+      padding: 14px 18px;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    .quick button {
+      background: linear-gradient(180deg, rgba(87, 215, 255, 0.28), rgba(87, 215, 255, 0.16));
+      color: #d9f4ff;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn-main {
+      background: linear-gradient(180deg, #4ade80, #16a34a);
+      color: #ffffff;
+      box-shadow: 0 8px 18px rgba(22, 163, 74, 0.28);
+    }
+
+    .btn-muted {
+      background: linear-gradient(180deg, #fb7185, #dc2626);
+      color: #ffffff;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .message {
+      color: var(--muted);
+      font-size: 0.92rem;
+      min-height: 20px;
+    }
+
+    .history {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: linear-gradient(140deg, rgba(9, 16, 34, 0.98), rgba(16, 28, 55, 0.95));
+    }
+
+    .dot {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.24);
+      box-shadow: 0 0 0 2px rgba(8, 16, 34, 0.95) inset;
+    }
+
+    .dot.red {
+      background: var(--red);
+    }
+
+    .dot.green {
+      background: var(--green);
+    }
+
+    .dot.violet {
+      background: var(--violet);
+    }
+
+    .right {
+      padding: 12px;
+      display: grid;
+      gap: 10px;
+      align-content: start;
+    }
+
+    .metric {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: linear-gradient(160deg, var(--panel-soft), rgba(10, 19, 40, 0.95));
+      padding: 10px;
+    }
+
+    .metric .k {
+      color: var(--muted);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .metric .v {
+      margin-top: 4px;
+      font-size: 1.15rem;
+      font-weight: 700;
+    }
+
+    .log {
+      max-height: 340px;
+      overflow: auto;
+      display: grid;
+      gap: 7px;
+    }
+
+    .log-item {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(10, 19, 40, 0.94);
+      padding: 8px;
+      color: var(--muted);
+      font-size: 0.86rem;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    @media (max-width: 940px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      .choices {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="top-header">
+    <img src="../img/lotus365.png" alt="Lotus 365" />
+  </header>
+  <main class="app">
+    <section class="panel left">
+      <div class="top">
+        <div class="title">Color Prediction Casino</div>
+        <div id="roundId" class="round-pill">Round #1</div>
+      </div>
+
+      <div class="stage">
+        <div class="status">
+          <div id="phase">Betting is open</div>
+          <div id="timer" class="timer">10.0s</div>
+        </div>
+        <div class="draw-box">
+          <div class="draw-label">Result</div>
+          <div id="drawResult" class="draw-result">Waiting...</div>
+        </div>
+      </div>
+
+      <div class="choices">
+        <button class="choice red selected" data-color="red" type="button">RED (2.00x)</button>
+        <button class="choice green" data-color="green" type="button">GREEN (2.00x)</button>
+        <button class="choice violet" data-color="violet" type="button">VIOLET (4.50x)</button>
+      </div>
+
+      <div class="controls">
+        <div>
+          <label for="betInput">Bet Amount</label>
+          <input id="betInput" type="number" min="10" step="10" value="50" />
+        </div>
+        <div>
+          <label>Current Pick</label>
+          <input id="selectedColor" type="text" value="RED" readonly />
+        </div>
+        <div class="quick">
+          <button type="button" data-amount="10">+10</button>
+          <button type="button" data-amount="50">+50</button>
+          <button type="button" data-amount="100">+100</button>
+          <button type="button" data-amount="500">MAX</button>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="placeBtn" class="btn-main" type="button">Place Bet</button>
+        <button id="cancelBtn" class="btn-muted" type="button">Cancel Bet</button>
+      </div>
+
+      <div id="message" class="message">Pick a color and place your bet before betting closes.</div>
+
+      <div>
+        <label>Recent Results</label>
+        <div id="history" class="history"></div>
+      </div>
+    </section>
+
+    <aside class="panel right">
+      <div class="metric">
+        <div class="k">Balance</div>
+        <div id="balance" class="v">$1000.00</div>
+      </div>
+      <div class="metric">
+        <div class="k">Net Profit</div>
+        <div id="profit" class="v">$0.00</div>
+      </div>
+      <div class="metric">
+        <div class="k">Current Bet</div>
+        <div id="currentBet" class="v">-</div>
+      </div>
+      <div class="metric">
+        <div class="k">Wins / Losses</div>
+        <div id="wl" class="v">0 / 0</div>
+      </div>
+      <div class="metric">
+        <div class="k">Activity</div>
+        <div id="log" class="log"></div>
+      </div>
+    </aside>
+  </main>
+
+  <script>
+    const ROUND_MS = 10000;
+    const LOCK_MS = 3000;
+    const BASE_BALANCE = 1000;
+    const PAYOUTS = { red: 2, green: 2, violet: 4.5 };
+    const WEIGHTS = [
+      { color: "red", w: 0.44 },
+      { color: "green", w: 0.44 },
+      { color: "violet", w: 0.12 }
+    ];
+
+    const state = {
+      roundId: 1,
+      roundStartAt: performance.now(),
+      phase: "betting",
+      selectedColor: "red",
+      balance: BASE_BALANCE,
+      currentBet: null,
+      nextResult: null,
+      history: [],
+      wins: 0,
+      losses: 0
+    };
+
+    const phaseEl = document.getElementById("phase");
+    const timerEl = document.getElementById("timer");
+    const roundIdEl = document.getElementById("roundId");
+    const drawResultEl = document.getElementById("drawResult");
+    const selectedColorEl = document.getElementById("selectedColor");
+    const betInput = document.getElementById("betInput");
+    const balanceEl = document.getElementById("balance");
+    const profitEl = document.getElementById("profit");
+    const currentBetEl = document.getElementById("currentBet");
+    const wlEl = document.getElementById("wl");
+    const historyEl = document.getElementById("history");
+    const logEl = document.getElementById("log");
+    const messageEl = document.getElementById("message");
+    const placeBtn = document.getElementById("placeBtn");
+    const cancelBtn = document.getElementById("cancelBtn");
+    const choiceButtons = Array.from(document.querySelectorAll(".choice"));
+    const quickButtons = Array.from(document.querySelectorAll(".quick button"));
+
+    function money(v) {
+      return `$${v.toFixed(2)}`;
+    }
+
+    function pickWeightedResult() {
+      const r = Math.random();
+      let acc = 0;
+      for (const item of WEIGHTS) {
+        acc += item.w;
+        if (r <= acc) return item.color;
+      }
+      return "red";
+    }
+
+    function setMessage(text) {
+      messageEl.textContent = text;
+    }
+
+    function addLog(left, right) {
+      const item = document.createElement("div");
+      item.className = "log-item";
+      item.innerHTML = `<span>${left}</span><strong>${right}</strong>`;
+      logEl.prepend(item);
+      while (logEl.children.length > 18) {
+        logEl.removeChild(logEl.lastChild);
+      }
+    }
+
+    function renderStats() {
+      balanceEl.textContent = money(state.balance);
+      profitEl.textContent = money(state.balance - BASE_BALANCE);
+      wlEl.textContent = `${state.wins} / ${state.losses}`;
+      if (!state.currentBet) {
+        currentBetEl.textContent = "-";
+      } else {
+        currentBetEl.textContent = `${state.currentBet.color.toUpperCase()} ${money(state.currentBet.amount)}`;
+      }
+    }
+
+    function renderHistory() {
+      historyEl.innerHTML = "";
+      state.history.slice(0, 20).forEach((color) => {
+        const dot = document.createElement("div");
+        dot.className = `dot ${color}`;
+        dot.title = color.toUpperCase();
+        historyEl.appendChild(dot);
+      });
+    }
+
+    function setDrawResult(text, colorClass = "") {
+      drawResultEl.className = "draw-result";
+      if (colorClass) drawResultEl.classList.add(colorClass);
+      drawResultEl.textContent = text;
+    }
+
+    function resetRound() {
+      state.roundId += 1;
+      state.roundStartAt = performance.now();
+      state.phase = "betting";
+      state.nextResult = pickWeightedResult();
+      roundIdEl.textContent = `Round #${state.roundId}`;
+      setDrawResult("Waiting...");
+      setMessage("Betting is open.");
+      updateButtons();
+    }
+
+    function settleRound() {
+      state.phase = "settled";
+      const result = state.nextResult || pickWeightedResult();
+      setDrawResult(result.toUpperCase(), result);
+      state.history.unshift(result);
+      renderHistory();
+
+      if (state.currentBet && state.currentBet.roundId === state.roundId) {
+        if (state.currentBet.color === result) {
+          const payout = +(state.currentBet.amount * PAYOUTS[result]).toFixed(2);
+          state.balance += payout;
+          state.wins += 1;
+          addLog(`Round #${state.roundId} WIN`, money(payout));
+          setMessage(`You won! ${result.toUpperCase()} paid ${PAYOUTS[result].toFixed(2)}x.`);
+        } else {
+          state.losses += 1;
+          addLog(`Round #${state.roundId} LOSS`, `-${money(state.currentBet.amount)}`);
+          setMessage(`You lost this round. Result: ${result.toUpperCase()}.`);
+        }
+        state.currentBet = null;
+        renderStats();
+      } else {
+        addLog(`Round #${state.roundId} Result`, result.toUpperCase());
+      }
+
+      updateButtons();
+      setTimeout(resetRound, 1200);
+    }
+
+    function updateButtons() {
+      const isBetting = state.phase === "betting";
+      placeBtn.disabled = !isBetting || !!state.currentBet;
+      cancelBtn.disabled = !isBetting || !state.currentBet;
+    }
+
+    function placeBet() {
+      if (state.phase !== "betting") {
+        setMessage("Betting is closed for this round.");
+        return;
+      }
+      if (state.currentBet) {
+        setMessage("You already placed a bet this round.");
+        return;
+      }
+
+      const amount = Number(betInput.value);
+      if (!Number.isFinite(amount) || amount < 10) {
+        setMessage("Minimum bet is $10.");
+        return;
+      }
+      if (amount > state.balance) {
+        setMessage("Not enough balance.");
+        return;
+      }
+
+      state.balance -= amount;
+      state.currentBet = { roundId: state.roundId, color: state.selectedColor, amount };
+      renderStats();
+      updateButtons();
+      addLog(`Round #${state.roundId} Bet`, `${state.selectedColor.toUpperCase()} ${money(amount)}`);
+      setMessage(`Bet placed on ${state.selectedColor.toUpperCase()}.`);
+    }
+
+    function cancelBet() {
+      if (!state.currentBet || state.phase !== "betting") return;
+      state.balance += state.currentBet.amount;
+      addLog(`Round #${state.roundId} Canceled`, money(state.currentBet.amount));
+      state.currentBet = null;
+      renderStats();
+      updateButtons();
+      setMessage("Bet canceled.");
+    }
+
+    function setSelectedColor(color) {
+      state.selectedColor = color;
+      selectedColorEl.value = color.toUpperCase();
+      choiceButtons.forEach((btn) => {
+        btn.classList.toggle("selected", btn.dataset.color === color);
+      });
+    }
+
+    function onTick() {
+      const elapsed = performance.now() - state.roundStartAt;
+      const left = Math.max(0, ROUND_MS - elapsed);
+      timerEl.textContent = `${(left / 1000).toFixed(1)}s`;
+
+      if (state.phase === "betting" && left <= LOCK_MS) {
+        state.phase = "drawing";
+        phaseEl.textContent = "Betting closed. Drawing result...";
+        setMessage("No more bets. Waiting for result.");
+        updateButtons();
+      } else if (state.phase === "betting") {
+        phaseEl.textContent = "Betting is open";
+      }
+
+      if (state.phase === "drawing") {
+        drawResultEl.textContent = "Rolling...";
+      }
+
+      if (left <= 0 && state.phase !== "settled") {
+        settleRound();
+      }
+    }
+
+    choiceButtons.forEach((btn) => {
+      btn.addEventListener("click", () => setSelectedColor(btn.dataset.color));
+    });
+
+    quickButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        if (btn.dataset.amount === "500") {
+          betInput.value = Math.floor(state.balance);
+          return;
+        }
+        const next = Number(betInput.value || 0) + Number(btn.dataset.amount);
+        betInput.value = next;
+      });
+    });
+
+    placeBtn.addEventListener("click", placeBet);
+    cancelBtn.addEventListener("click", cancelBet);
+
+    state.nextResult = pickWeightedResult();
+    renderStats();
+    renderHistory();
+    updateButtons();
+    setInterval(onTick, 100);
+  </script>
+</body>
+
+</html>

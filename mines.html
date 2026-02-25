@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="../img/favicon.png" />
+    <title>Lotus 365/Mines</title>
+    <style>
+        :root {
+            --bg: #070b1a;
+            --panel: rgba(10, 17, 37, 0.92);
+            --panel-2: rgba(14, 23, 46, 0.92);
+            --edge: rgba(165, 188, 232, 0.2);
+            --text: #eaf2ff;
+            --muted: #a8bbdd;
+            --accent: #ffc95f;
+            --safe: #10b981;
+            --mine: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Tahoma, sans-serif;
+            background:
+                radial-gradient(circle at 15% 10%, rgba(255, 90, 124, 0.26) 0%, transparent 35%),
+                radial-gradient(circle at 85% 0%, rgba(186, 130, 255, 0.24) 0%, transparent 28%),
+                radial-gradient(circle at 50% 100%, rgba(87, 215, 255, 0.2) 0%, transparent 45%),
+                var(--bg);
+            background-size: 120% 120%;
+            animation: hueShift 14s ease-in-out infinite alternate;
+            color: var(--text);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        @keyframes hueShift {
+            from {
+                filter: hue-rotate(0deg);
+            }
+
+            to {
+                filter: hue-rotate(22deg);
+            }
+        }
+
+        .top-header {
+            max-width: 900px;
+            margin: 0 auto 12px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1px solid var(--edge);
+            background: linear-gradient(120deg, rgba(12, 21, 44, 0.95), rgba(21, 35, 67, 0.9));
+            text-align: center;
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
+        }
+
+        .top-header img {
+            height: 38px;
+            width: auto;
+            display: block;
+            margin: 0 auto;
+            object-fit: contain;
+        }
+
+        .app {
+            width: min(900px, 100%);
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 16px;
+        }
+
+        .card {
+            background: linear-gradient(180deg, var(--panel), var(--panel-2));
+            border: 1px solid var(--edge);
+            border-radius: 14px;
+            padding: 16px;
+            box-shadow:
+                0 16px 36px rgba(2, 6, 23, 0.56),
+                0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+        }
+
+        h1 {
+            margin: 0 0 10px;
+            font-size: 22px;
+        }
+
+        .sub {
+            color: var(--muted);
+            margin: 0 0 14px;
+            font-size: 13px;
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: 1.5fr 0.9fr;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        label {
+            display: block;
+            color: var(--muted);
+            font-size: 12px;
+            margin-bottom: 6px;
+        }
+
+        input,
+        select,
+        button {
+            width: 100%;
+            border: 1px solid var(--edge);
+            background: rgba(9, 16, 34, 0.92);
+            color: var(--text);
+            border-radius: 10px;
+            padding: 10px 11px;
+            font-size: 14px;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        input[type="number"] {
+            appearance: textfield;
+            -moz-appearance: textfield;
+        }
+
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .stepper {
+            display: grid;
+            grid-template-columns: 42px 1fr 42px;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .step-btn {
+            border: 1px solid var(--edge);
+            border-radius: 10px;
+            padding: 10px 0;
+            color: var(--text);
+            background: linear-gradient(180deg, rgba(87, 215, 255, 0.4), rgba(76, 111, 184, 0.36));
+            font-size: 1.1rem;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        button {
+            cursor: pointer;
+            font-weight: 600;
+            transition: .15s ease;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-1px);
+        }
+
+        button:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+        }
+
+        .start {
+            background: #064e3b;
+            border-color: #0f766e;
+        }
+
+        .cashout {
+            background: #713f12;
+            border-color: #a16207;
+            margin-top: 8px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 14px;
+        }
+
+        .stat {
+            background: rgba(255, 255, 255, .03);
+            border: 1px solid #2a3a4e;
+            border-radius: 10px;
+            padding: 10px;
+        }
+
+        .stat b {
+            display: block;
+            font-size: 16px;
+            margin-top: 4px;
+        }
+
+        .log {
+            margin-top: 12px;
+            font-size: 13px;
+            color: var(--muted);
+            min-height: 20px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(50px, 1fr));
+            gap: 10px;
+        }
+
+        .cell {
+            aspect-ratio: 1;
+            border-radius: 12px;
+            border: 1px solid #2c3e53;
+            background: #0b1321;
+            display: grid;
+            place-items: center;
+            font-size: 20px;
+            cursor: pointer;
+            user-select: none;
+            transition: .12s ease;
+        }
+
+        .cell:hover {
+            border-color: #4b6380;
+        }
+
+        .cell.open-safe {
+            background: rgba(16, 185, 129, .2);
+            border-color: #10b981;
+        }
+
+        .cell.open-mine {
+            background: rgba(239, 68, 68, .2);
+            border-color: #ef4444;
+        }
+
+        @media (max-width: 820px) {
+            .app {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="top-header">
+        <img src="../img/lotus365.png" alt="Lotus 365" />
+    </header>
+
+    <div class="app">
+        <section class="card">
+            <h1>Mines</h1>
+            <div class="row">
+                <div>
+                    <label for="bet">Bet</label>
+                    <div class="stepper">
+                        <button id="betDec" class="step-btn" type="button">-</button>
+                        <input id="bet" type="number" min="1" step="1" value="100" />
+                        <button id="betInc" class="step-btn" type="button">+</button>
+                    </div>
+                </div>
+                <div>
+                    <label>Cross Points</label>
+                    <input type="text" value="6 (Fixed)" disabled />
+                </div>
+            </div>
+
+            <div>
+                <button id="startBtn" class="start">Start Round</button>
+                <button id="cashoutBtn" class="cashout" disabled>Cash Out</button>
+            </div>
+
+            <div class="stats">
+                <div class="stat">Balance<b id="balance">1000.00</b></div>
+                <div class="stat">Safe Picks<b id="safePicks">0</b></div>
+                <div class="stat">Current Multiplier<b id="currentMult">1.00x</b></div>
+                <div class="stat">Next Multiplier<b id="nextMult">-</b></div>
+            </div>
+
+            <div class="log" id="log">Set bet, then start (6 cross points fixed).</div>
+        </section>
+
+        <section class="card">
+            <div class="grid" id="grid"></div>
+        </section>
+    </div>
+
+    <script>
+        const GRID_SIZE = 25;
+        const RTP = 0.40;
+        const FIXED_MINES = 6;
+
+        const betEl = document.getElementById("bet");
+        const betDecBtn = document.getElementById("betDec");
+        const betIncBtn = document.getElementById("betInc");
+        const startBtn = document.getElementById("startBtn");
+        const cashoutBtn = document.getElementById("cashoutBtn");
+
+        const balanceEl = document.getElementById("balance");
+        const safePicksEl = document.getElementById("safePicks");
+        const currentMultEl = document.getElementById("currentMult");
+        const nextMultEl = document.getElementById("nextMult");
+        const logEl = document.getElementById("log");
+        const gridEl = document.getElementById("grid");
+
+        let balance = 1000;
+        let active = false;
+        let betAmount = 0;
+        let mineSet = new Set();
+        let opened = new Set();
+        let safePicks = 0;
+
+        function comb(n, k) {
+            if (k < 0 || k > n) return 0;
+            if (k === 0 || k === n) return 1;
+            let kk = Math.min(k, n - k);
+            let r = 1;
+            for (let i = 1; i <= kk; i += 1) {
+                r = (r * (n - kk + i)) / i;
+            }
+            return r;
+        }
+
+        function multiplierFor(k, mines) {
+            if (k === 0) return 1;
+            const fair = comb(GRID_SIZE, k) / comb(GRID_SIZE - mines, k);
+            return fair * RTP;
+        }
+
+        function fmt(n) {
+            return Number(n).toFixed(2);
+        }
+
+        function normalizeBet(v) {
+            const n = Math.floor(Number(v));
+            if (!Number.isFinite(n) || n < 1) return 1;
+            return n;
+        }
+
+        function adjustBet(delta) {
+            const next = normalizeBet(betEl.value) + delta;
+            betEl.value = String(next < 1 ? 1 : next);
+        }
+
+        function updateStats() {
+            const mines = FIXED_MINES;
+            balanceEl.textContent = fmt(balance);
+            safePicksEl.textContent = String(safePicks);
+
+            const current = safePicks > 0 ? multiplierFor(safePicks, mines) : 1;
+            currentMultEl.textContent = `${current.toFixed(2)}x`;
+
+            const nextK = safePicks + 1;
+            if (nextK <= GRID_SIZE - mines) {
+                const next = multiplierFor(nextK, mines);
+                nextMultEl.textContent = `${next.toFixed(2)}x`;
+            } else {
+                nextMultEl.textContent = "MAX";
+            }
+        }
+
+        function buildGrid() {
+            gridEl.innerHTML = "";
+            for (let i = 0; i < GRID_SIZE; i += 1) {
+                const c = document.createElement("button");
+                c.className = "cell";
+                c.type = "button";
+                c.dataset.idx = String(i);
+                c.textContent = "";
+                c.addEventListener("click", () => clickCell(i, c));
+                gridEl.appendChild(c);
+            }
+        }
+
+        function placeMines(mines) {
+            mineSet.clear();
+            while (mineSet.size < mines) {
+                mineSet.add(Math.floor(Math.random() * GRID_SIZE));
+            }
+        }
+
+        function revealAll() {
+            for (const cell of gridEl.children) {
+                const i = Number(cell.dataset.idx);
+                if (mineSet.has(i)) {
+                    cell.classList.add("open-mine");
+                    cell.textContent = "X";
+                } else if (!opened.has(i)) {
+                    cell.classList.add("open-safe");
+                    cell.textContent = "O";
+                }
+                cell.disabled = true;
+            }
+        }
+
+        function resetRoundView() {
+            opened.clear();
+            safePicks = 0;
+            for (const cell of gridEl.children) {
+                cell.className = "cell";
+                cell.textContent = "";
+                cell.disabled = false;
+            }
+            updateStats();
+        }
+
+        function startRound() {
+            const mines = FIXED_MINES;
+            const bet = Number(betEl.value);
+
+            if (!Number.isFinite(bet) || bet <= 0) {
+                logEl.textContent = "Enter a valid bet amount.";
+                return;
+            }
+            if (bet > balance) {
+                logEl.textContent = "Insufficient balance.";
+                return;
+            }
+
+            betAmount = bet;
+            balance -= betAmount;
+            active = true;
+
+            placeMines(mines);
+            resetRoundView();
+
+            startBtn.disabled = true;
+            betEl.disabled = true;
+            betDecBtn.disabled = true;
+            betIncBtn.disabled = true;
+            cashoutBtn.disabled = false;
+
+            logEl.textContent = `Round started. Bet ${fmt(betAmount)}. Avoid ${mines} cross points.`;
+            updateStats();
+        }
+
+        function endRound(message) {
+            active = false;
+            startBtn.disabled = false;
+            betEl.disabled = false;
+            betDecBtn.disabled = false;
+            betIncBtn.disabled = false;
+            cashoutBtn.disabled = true;
+            logEl.textContent = message;
+            updateStats();
+        }
+
+        function clickCell(i, cellEl) {
+            if (!active || opened.has(i)) return;
+
+            opened.add(i);
+            cellEl.disabled = true;
+
+            if (mineSet.has(i)) {
+                cellEl.classList.add("open-mine");
+                cellEl.textContent = "X";
+                revealAll();
+                endRound(`Boom. You hit a mine and lost ${fmt(betAmount)}.`);
+                return;
+            }
+
+            safePicks += 1;
+            cellEl.classList.add("open-safe");
+            cellEl.textContent = "O";
+            updateStats();
+
+            const mines = FIXED_MINES;
+            const maxSafe = GRID_SIZE - mines;
+            if (safePicks >= maxSafe) {
+                cashOut(true);
+            }
+        }
+
+        function cashOut(allCleared = false) {
+            if (!active) return;
+
+            const mines = FIXED_MINES;
+            const mult = safePicks > 0 ? multiplierFor(safePicks, mines) : 1;
+            const win = betAmount * mult;
+            balance += win;
+
+            revealAll();
+            endRound(
+                allCleared
+                    ? `Board cleared! Payout ${fmt(win)} (${mult.toFixed(2)}x).`
+                    : `Cashed out ${fmt(win)} (${mult.toFixed(2)}x).`
+            );
+        }
+
+        startBtn.addEventListener("click", startRound);
+        cashoutBtn.addEventListener("click", () => cashOut(false));
+        betDecBtn.addEventListener("click", () => adjustBet(-10));
+        betIncBtn.addEventListener("click", () => adjustBet(10));
+        betEl.addEventListener("change", () => {
+            betEl.value = String(normalizeBet(betEl.value));
+        });
+
+        buildGrid();
+        updateStats();
+    </script>
+</body>
+
+</html>

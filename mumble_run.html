@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" href="../img/favicon.png" />
+  <title>Lotus 365/Mumble Run</title>
+  <style>
+    :root {
+      --bg: #08131e;
+      --panel: rgba(10, 24, 38, 0.9);
+      --panel-soft: rgba(13, 31, 49, 0.85);
+      --line: rgba(151, 197, 223, 0.2);
+      --text: #eaf8ff;
+      --muted: #9ec4db;
+      --accent: #47e6a1;
+      --accent-2: #1ab6ff;
+      --danger: #ff5b7c;
+      --warn: #ffd166;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      background:
+        radial-gradient(circle at 12% 10%, rgba(71, 230, 161, 0.25), transparent 35%),
+        radial-gradient(circle at 85% 0%, rgba(26, 182, 255, 0.2), transparent 38%),
+        radial-gradient(circle at 55% 100%, rgba(255, 91, 124, 0.16), transparent 45%),
+        var(--bg);
+      padding: 16px;
+    }
+
+    .top-header {
+      max-width: 1120px;
+      margin: 0 auto 12px;
+      padding: 12px 16px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: linear-gradient(130deg, rgba(8, 20, 33, 0.95), rgba(15, 36, 56, 0.9));
+      text-align: center;
+    }
+
+    .top-header img {
+      height: 38px;
+      width: auto;
+      display: block;
+      margin: 0 auto;
+      object-fit: contain;
+    }
+
+    .app {
+      max-width: 1120px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 12px;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: linear-gradient(180deg, var(--panel), var(--panel-soft));
+      box-shadow:
+        0 16px 36px rgba(0, 0, 0, 0.45),
+        0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+    }
+
+    .left {
+      padding: 14px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .title {
+      font-size: 1.26rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      background: linear-gradient(90deg, #b7ffe3, #61f6b4, #5fd7ff, #ffd166);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .history {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+    }
+
+    .chip {
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      padding: 5px 9px;
+      font-size: 0.84rem;
+      font-weight: 700;
+      white-space: nowrap;
+      background: rgba(8, 20, 34, 0.9);
+    }
+
+    .chip.low {
+      color: #ff9cb0;
+    }
+
+    .chip.mid {
+      color: #8bdcff;
+    }
+
+    .chip.high {
+      color: #97ffce;
+    }
+
+    .arena {
+      position: relative;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      overflow: hidden;
+      height: 420px;
+      background:
+        repeating-linear-gradient(
+          to right,
+          rgba(159, 201, 223, 0.08) 0 1px,
+          transparent 1px 42px
+        ),
+        linear-gradient(180deg, rgba(5, 16, 26, 0.95) 0%, rgba(6, 22, 35, 0.92) 100%);
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .hud {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      display: grid;
+      place-items: center;
+      text-align: center;
+    }
+
+    .multi {
+      font-size: clamp(2rem, 5vw, 4rem);
+      font-weight: 900;
+      letter-spacing: 0.03em;
+      text-shadow: 0 0 20px rgba(97, 246, 180, 0.25);
+    }
+
+    .multi.crashed {
+      color: var(--danger);
+      text-shadow: 0 0 18px rgba(255, 91, 124, 0.33);
+    }
+
+    .status {
+      color: var(--muted);
+      font-weight: 700;
+      margin-top: 4px;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    label {
+      color: var(--muted);
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .stepper {
+      display: grid;
+      grid-template-columns: 42px 1fr 42px;
+      gap: 8px;
+      align-items: center;
+    }
+
+    input {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px;
+      font-size: 1rem;
+      color: var(--text);
+      background: rgba(7, 18, 30, 0.95);
+      outline: none;
+    }
+
+    input[type="number"] {
+      appearance: textfield;
+      -moz-appearance: textfield;
+    }
+
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    .step-btn {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px 0;
+      color: var(--text);
+      font-size: 1.1rem;
+      font-weight: 800;
+      background: linear-gradient(180deg, rgba(95, 215, 255, 0.44), rgba(46, 133, 173, 0.35));
+      cursor: pointer;
+    }
+
+    .actions {
+      display: flex;
+      gap: 9px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    button.action {
+      border: 0;
+      border-radius: 10px;
+      padding: 13px 17px;
+      font-size: 1rem;
+      font-weight: 800;
+      cursor: pointer;
+      color: #f6ffff;
+    }
+
+    #betBtn {
+      background: linear-gradient(180deg, #4be89f, #1eab6f);
+      box-shadow: 0 8px 18px rgba(30, 171, 111, 0.3);
+    }
+
+    #cashBtn {
+      background: linear-gradient(180deg, #4ec9ff, #1d8cbf);
+      box-shadow: 0 8px 18px rgba(29, 140, 191, 0.3);
+    }
+
+    #cancelBtn {
+      background: linear-gradient(180deg, #ff7f97, #e04263);
+      box-shadow: 0 8px 18px rgba(224, 66, 99, 0.3);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .toggle {
+      margin-left: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 7px 10px;
+      color: var(--muted);
+      background: rgba(8, 20, 33, 0.7);
+      font-size: 0.84rem;
+      font-weight: 700;
+    }
+
+    .toggle label {
+      text-transform: none;
+      letter-spacing: 0;
+      color: var(--text);
+      font-size: 0.82rem;
+      display: inline-flex;
+      gap: 4px;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .toggle input[type="radio"] {
+      cursor: pointer;
+      accent-color: var(--accent);
+    }
+
+    .info {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      color: var(--muted);
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .right {
+      padding: 12px;
+      display: grid;
+      gap: 10px;
+      align-content: start;
+      max-height: calc(100vh - 32px);
+      overflow: auto;
+    }
+
+    .metric {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px;
+      background: rgba(10, 23, 37, 0.9);
+    }
+
+    .metric .k {
+      color: var(--muted);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .metric .v {
+      margin-top: 4px;
+      font-size: 1.22rem;
+      font-weight: 800;
+    }
+
+    .feed {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      max-height: 350px;
+      overflow: auto;
+      padding: 8px;
+      display: grid;
+      gap: 6px;
+      background: rgba(8, 19, 31, 0.9);
+    }
+
+    .feed-item {
+      border: 1px solid rgba(151, 197, 223, 0.14);
+      border-radius: 8px;
+      background: rgba(14, 29, 46, 0.9);
+      padding: 6px 8px;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 0.86rem;
+    }
+
+    .feed-item span:last-child {
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    @media (max-width: 980px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      .right {
+        max-height: none;
+      }
+
+      .arena {
+        height: 350px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="top-header">
+    <img src="../img/lotus365.png" alt="Lotus 365" />
+  </header>
+
+  <main class="app">
+    <section class="panel left">
+      <div class="head">
+        <div class="title">Mumble Run</div>
+        <div id="history" class="history"></div>
+      </div>
+
+      <div class="arena" id="arena">
+        <canvas id="track" width="760" height="420"></canvas>
+        <div class="hud">
+          <div>
+            <div id="multiplier" class="multi">0.00x</div>
+            <div id="status" class="status">Next run in 6.0s</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <div class="field">
+          <label for="betInput">Bet Amount</label>
+          <div class="stepper">
+            <button id="betDecBtn" class="step-btn" type="button">-</button>
+            <input id="betInput" type="number" min="10" step="10" value="50" />
+            <button id="betIncBtn" class="step-btn" type="button">+</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="autoInput">Auto Cashout (x)</label>
+          <div class="stepper">
+            <button id="autoDecBtn" class="step-btn" type="button">-</button>
+            <input id="autoInput" type="number" min="1.01" step="0.01" placeholder="off" />
+            <button id="autoIncBtn" class="step-btn" type="button">+</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="betBtn" class="action" type="button">Place Bet</button>
+        <button id="cashBtn" class="action" type="button" disabled>Cash Out</button>
+        <button id="cancelBtn" class="action" type="button" disabled>Cancel Bet</button>
+
+        <div class="toggle">
+          <span>Auto</span>
+          <label><input id="autoOff" type="radio" name="autoMode" checked /> OFF</label>
+          <label><input id="autoOn" type="radio" name="autoMode" /> ON</label>
+        </div>
+      </div>
+
+      <div class="info">
+        <div id="roundInfo">Round: waiting</div>
+        <div id="seedInfo">Seed hash: -</div>
+        <div id="message">Place a bet before the run starts.</div>
+      </div>
+    </section>
+
+    <aside class="panel right">
+      <div class="metric">
+        <div class="k">Balance</div>
+        <div id="balance" class="v">$1000.00</div>
+      </div>
+      <div class="metric">
+        <div class="k">Current Bet</div>
+        <div id="currentBet" class="v">$0.00</div>
+      </div>
+      <div class="metric">
+        <div class="k">Net Profit</div>
+        <div id="profit" class="v">$0.00</div>
+      </div>
+      <div class="metric">
+        <div class="k">Last Stumble</div>
+        <div id="lastCrash" class="v">-</div>
+      </div>
+      <div class="metric">
+        <div class="k">Live Cashouts</div>
+      </div>
+      <div id="feed" class="feed"></div>
+    </aside>
+  </main>
+
+  <script>
+    const HOUSE_EDGE = 0.15;
+
+    const state = {
+      phase: "waiting",
+      waitingMs: 6000,
+      waitEndAt: 0,
+      runStartAt: 0,
+      roundId: 0,
+      seedHash: "",
+      multiplier: 0,
+      stumbleAt: 1,
+      balance: 1000,
+      profit: 0,
+      history: [],
+      activeBet: null,
+      autoEnabled: false,
+      frameId: null,
+      botTimer: null,
+      didCrash: false,
+      runnerYPhase: 0,
+      obstacles: []
+    };
+
+    const arena = document.getElementById("arena");
+    const canvas = document.getElementById("track");
+    const ctx = canvas.getContext("2d");
+
+    const multiplierEl = document.getElementById("multiplier");
+    const statusEl = document.getElementById("status");
+    const roundInfoEl = document.getElementById("roundInfo");
+    const seedInfoEl = document.getElementById("seedInfo");
+    const messageEl = document.getElementById("message");
+    const historyEl = document.getElementById("history");
+
+    const balanceEl = document.getElementById("balance");
+    const currentBetEl = document.getElementById("currentBet");
+    const profitEl = document.getElementById("profit");
+    const lastCrashEl = document.getElementById("lastCrash");
+    const feedEl = document.getElementById("feed");
+
+    const betInput = document.getElementById("betInput");
+    const autoInput = document.getElementById("autoInput");
+    const betBtn = document.getElementById("betBtn");
+    const cashBtn = document.getElementById("cashBtn");
+    const cancelBtn = document.getElementById("cancelBtn");
+    const betDecBtn = document.getElementById("betDecBtn");
+    const betIncBtn = document.getElementById("betIncBtn");
+    const autoDecBtn = document.getElementById("autoDecBtn");
+    const autoIncBtn = document.getElementById("autoIncBtn");
+    const autoOff = document.getElementById("autoOff");
+    const autoOn = document.getElementById("autoOn");
+
+    function money(v) {
+      return `$${v.toFixed(2)}`;
+    }
+
+    function mul(v) {
+      return `${v.toFixed(2)}x`;
+    }
+
+    function hashSeed(seed) {
+      let h = 2166136261;
+      for (let i = 0; i < seed.length; i += 1) {
+        h ^= seed.charCodeAt(i);
+        h = Math.imul(h, 16777619);
+      }
+      return (h >>> 0).toString(16).padStart(8, "0");
+    }
+
+    function crashPoint() {
+      const u = Math.random();
+      const raw = ((1 - HOUSE_EDGE) / (1 - u)) - 1;
+      const value = Math.max(0, Math.min(50, Math.floor(raw * 100) / 100));
+      return value;
+    }
+
+    function multiplierAt(ms) {
+      return Math.exp(0.00016 * ms) - 1;
+    }
+
+    function setMessage(text) {
+      messageEl.textContent = text;
+    }
+
+    function updateStats() {
+      balanceEl.textContent = money(state.balance);
+      currentBetEl.textContent = state.activeBet ? money(state.activeBet.amount) : "$0.00";
+      profitEl.textContent = money(state.profit);
+      lastCrashEl.textContent = state.history.length ? mul(state.history[0]) : "-";
+    }
+
+    function pushFeed(name, amount, at) {
+      const row = document.createElement("div");
+      row.className = "feed-item";
+      row.innerHTML = `<span>${name} cashed ${money(amount)}</span><span>${mul(at)}</span>`;
+      feedEl.prepend(row);
+      while (feedEl.children.length > 18) {
+        feedEl.removeChild(feedEl.lastChild);
+      }
+    }
+
+    function updateHistory() {
+      historyEl.innerHTML = "";
+      state.history.slice(0, 16).forEach((value) => {
+        const chip = document.createElement("div");
+        chip.className = "chip";
+        if (value < 2) chip.classList.add("low");
+        else if (value < 10) chip.classList.add("mid");
+        else chip.classList.add("high");
+        chip.textContent = mul(value);
+        historyEl.appendChild(chip);
+      });
+    }
+
+    function updateControls() {
+      const hasBet = !!state.activeBet;
+      betBtn.disabled = state.phase !== "waiting" || hasBet;
+      cancelBtn.disabled = state.phase !== "waiting" || !hasBet;
+      cashBtn.disabled = state.phase !== "running" || !hasBet || state.activeBet.cashed;
+    }
+
+    function updateAutoUI() {
+      autoOn.checked = state.autoEnabled;
+      autoOff.checked = !state.autoEnabled;
+      autoInput.disabled = !state.autoEnabled;
+      autoDecBtn.disabled = !state.autoEnabled;
+      autoIncBtn.disabled = !state.autoEnabled;
+      autoInput.placeholder = state.autoEnabled ? "e.g. 1.80" : "off";
+    }
+
+    function setAuto(enabled) {
+      state.autoEnabled = enabled;
+      updateAutoUI();
+      if (!enabled) autoInput.value = "";
+      setMessage(`Auto cashout ${enabled ? "enabled" : "disabled"}.`);
+    }
+
+    function stepInput(el, delta) {
+      const step = Number(el.step) || 1;
+      const min = Number(el.min);
+      const raw = Number(el.value);
+      const start = Number.isFinite(raw) ? raw : (Number.isFinite(min) ? min : 0);
+      let next = start + delta * step;
+      if (Number.isFinite(min)) next = Math.max(min, next);
+      const decimals = (String(step).split(".")[1] || "").length;
+      el.value = next.toFixed(decimals);
+      el.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+
+    function resetTrackEntities() {
+      state.obstacles = [];
+      const spacing = 380;
+      const count = 8;
+      for (let i = 0; i < count; i += 1) {
+        state.obstacles.push({ x: 680 + i * spacing, w: 18 + (i % 3) * 4, h: 26 + (i % 2) * 8 });
+      }
+      state.runnerYPhase = 0;
+    }
+
+    function setWaiting() {
+      state.phase = "waiting";
+      state.waitEndAt = performance.now() + state.waitingMs;
+      state.roundId += 1;
+      state.multiplier = 0;
+      state.didCrash = false;
+      state.activeBet = null;
+      const seed = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      state.seedHash = hashSeed(seed);
+      seedInfoEl.textContent = `Seed hash: ${state.seedHash}`;
+      roundInfoEl.textContent = `Round #${state.roundId} waiting`;
+      multiplierEl.classList.remove("crashed");
+      multiplierEl.textContent = "0.00x";
+      setMessage("Bet window is open.");
+
+      if (state.botTimer) {
+        clearInterval(state.botTimer);
+        state.botTimer = null;
+      }
+
+      resetTrackEntities();
+      updateControls();
+      loop();
+    }
+
+    function startRun() {
+      state.phase = "running";
+      state.runStartAt = performance.now();
+      state.stumbleAt = crashPoint();
+      roundInfoEl.textContent = `Round #${state.roundId} running`;
+      setMessage("Mumble is running. Cash out before the stumble.");
+
+      state.botTimer = setInterval(() => {
+        if (state.phase !== "running") return;
+        if (state.multiplier < 1.07) return;
+        const upper = Math.min(state.multiplier, 9);
+        const at = +(1.01 + Math.random() * (upper - 1.01)).toFixed(2);
+        if (at >= state.multiplier) return;
+        const botNames = ["Nova77", "Aces", "Mamba", "Orbit", "RiskX", "Kilo", "Spark"];
+        const bet = Math.floor(20 + Math.random() * 280);
+        pushFeed(botNames[Math.floor(Math.random() * botNames.length)], bet * at, at);
+      }, 850);
+
+      updateControls();
+      loop();
+    }
+
+    function endRun() {
+      state.phase = "crashed";
+      state.didCrash = true;
+      state.multiplier = state.stumbleAt;
+      state.history.unshift(state.stumbleAt);
+      if (state.history.length > 40) state.history.pop();
+      updateHistory();
+
+      multiplierEl.textContent = mul(state.stumbleAt);
+      multiplierEl.classList.add("crashed");
+      statusEl.textContent = `Mumble stumbled at ${mul(state.stumbleAt)}`;
+      roundInfoEl.textContent = `Round #${state.roundId} crashed`;
+      setMessage(`Stumble at ${mul(state.stumbleAt)}.`);
+
+      if (state.activeBet) {
+        state.activeBet = null;
+      }
+
+      if (state.botTimer) {
+        clearInterval(state.botTimer);
+        state.botTimer = null;
+      }
+
+      updateStats();
+      updateControls();
+      setTimeout(setWaiting, 2600);
+    }
+
+    function placeBet() {
+      if (state.phase !== "waiting") {
+        setMessage("You can only place bets during waiting phase.");
+        return;
+      }
+      if (state.activeBet) {
+        setMessage("Bet already placed for this round.");
+        return;
+      }
+
+      const amount = Number(betInput.value);
+      if (!Number.isFinite(amount) || amount < 10) {
+        setMessage("Minimum bet is $10.");
+        return;
+      }
+      if (amount > state.balance) {
+        setMessage("Insufficient balance.");
+        return;
+      }
+
+      let auto = null;
+      if (state.autoEnabled) {
+        const autoVal = Number(autoInput.value);
+        if (!Number.isFinite(autoVal) || autoVal < 1.01) {
+          setMessage("Set valid auto cashout >= 1.01x, or turn Auto OFF.");
+          return;
+        }
+        auto = autoVal;
+      }
+
+      state.balance -= amount;
+      state.activeBet = { amount, autoCash: auto, cashed: false };
+      updateStats();
+      updateControls();
+      setMessage(`Bet accepted: ${money(amount)}${auto ? `, auto at ${mul(auto)}` : ""}.`);
+    }
+
+    function cancelBet() {
+      if (state.phase !== "waiting" || !state.activeBet) return;
+      state.balance += state.activeBet.amount;
+      state.activeBet = null;
+      updateStats();
+      updateControls();
+      setMessage("Bet canceled.");
+    }
+
+    function cashOut(manual = true) {
+      if (state.phase !== "running" || !state.activeBet || state.activeBet.cashed) return;
+      const payout = +(state.activeBet.amount * state.multiplier).toFixed(2);
+      state.balance += payout;
+      state.profit += payout - state.activeBet.amount;
+      state.activeBet.cashed = true;
+      pushFeed("You", payout, state.multiplier);
+      setMessage(`${manual ? "Manual" : "Auto"} cashout at ${mul(state.multiplier)} for ${money(payout)}.`);
+      updateStats();
+      updateControls();
+    }
+
+    function drawTrack(w, h, elapsedMs) {
+      ctx.clearRect(0, 0, w, h);
+
+      const floorY = h - 72;
+      const laneTop = floorY - 90;
+      ctx.fillStyle = "rgba(11, 29, 45, 0.75)";
+      ctx.fillRect(0, laneTop, w, floorY - laneTop);
+
+      const speed = 0.14 + Math.min(0.3, elapsedMs * 0.000015);
+      const stripeOffset = (elapsedMs * speed) % 42;
+      for (let x = -42 + stripeOffset; x < w + 42; x += 42) {
+        ctx.fillStyle = "rgba(134, 201, 228, 0.16)";
+        ctx.fillRect(x, floorY - 16, 24, 6);
+      }
+
+      ctx.fillStyle = "rgba(104, 167, 195, 0.38)";
+      ctx.fillRect(0, floorY - 2, w, 2);
+
+      if (state.phase === "running") {
+        state.obstacles.forEach((obs) => {
+          obs.x -= 2.4 + state.multiplier * 0.17;
+          if (obs.x + obs.w < -12) {
+            obs.x = w + Math.random() * 250;
+            obs.h = 20 + Math.random() * 34;
+            obs.w = 14 + Math.random() * 12;
+          }
+        });
+      }
+
+      state.obstacles.forEach((obs) => {
+        const top = floorY - obs.h;
+        const grad = ctx.createLinearGradient(0, top, 0, floorY);
+        grad.addColorStop(0, "rgba(255, 209, 102, 0.9)");
+        grad.addColorStop(1, "rgba(255, 129, 83, 0.86)");
+        ctx.fillStyle = grad;
+        ctx.fillRect(obs.x, top, obs.w, obs.h);
+      });
+
+      const runnerBaseX = 130;
+      const bob = state.phase === "running" ? Math.sin(state.runnerYPhase) * 4 : 0;
+      state.runnerYPhase += 0.24 + Math.min(0.22, state.multiplier * 0.03);
+      const runnerY = floorY - 28 + bob;
+
+      if (state.phase === "crashed") {
+        ctx.save();
+        ctx.translate(runnerBaseX + 4, runnerY + 2);
+        ctx.rotate(-0.5);
+        drawRunner(0, 0, true);
+        ctx.restore();
+      } else {
+        drawRunner(runnerBaseX, runnerY, false);
+      }
+
+      function drawRunner(x, y, crashed) {
+        ctx.fillStyle = "#f2fbff";
+        ctx.beginPath();
+        ctx.arc(x, y - 24, 12, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = "#0f3d55";
+        ctx.beginPath();
+        ctx.ellipse(x, y, 17, 22, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = "#ffcf5a";
+        ctx.beginPath();
+        ctx.moveTo(x + 10, y - 23);
+        ctx.lineTo(x + 23, y - 18);
+        ctx.lineTo(x + 10, y - 14);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.strokeStyle = "#a3ddf8";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(x - 7, y + 20);
+        ctx.lineTo(x - (crashed ? 14 : 10), y + 28);
+        ctx.moveTo(x + 7, y + 20);
+        ctx.lineTo(x + (crashed ? 15 : 10), y + 28);
+        ctx.stroke();
+
+        ctx.fillStyle = "#102c3f";
+        ctx.fillRect(x - 11, y + 28, 8, 4);
+        ctx.fillRect(x + 3, y + 28, 8, 4);
+
+        ctx.fillStyle = "#08202f";
+        ctx.fillRect(x - 15, y - 10, 6, 3);
+        ctx.fillRect(x + 9, y - 10, 6, 3);
+      }
+    }
+
+    function renderTrack(elapsedMs) {
+      const rect = arena.getBoundingClientRect();
+      const w = Math.floor(rect.width);
+      const h = Math.floor(rect.height);
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.floor(w * dpr);
+      canvas.height = Math.floor(h * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      drawTrack(w, h, elapsedMs);
+    }
+
+    function loop() {
+      cancelAnimationFrame(state.frameId);
+
+      const tick = () => {
+        const now = performance.now();
+        let elapsed = 0;
+
+        if (state.phase === "waiting") {
+          const leftMs = Math.max(0, state.waitEndAt - now);
+          statusEl.textContent = `Next run in ${(leftMs / 1000).toFixed(1)}s`;
+          if (leftMs <= 0) startRun();
+        } else if (state.phase === "running") {
+          elapsed = now - state.runStartAt;
+          state.multiplier = +multiplierAt(elapsed).toFixed(2);
+          multiplierEl.textContent = mul(state.multiplier);
+          statusEl.textContent = "Mumble is sprinting";
+
+          if (state.activeBet && !state.activeBet.cashed && state.activeBet.autoCash && state.multiplier >= state.activeBet.autoCash) {
+            cashOut(false);
+          }
+
+          if (state.multiplier >= state.stumbleAt) {
+            endRun();
+          }
+        }
+
+        renderTrack(elapsed);
+
+        if (state.phase === "waiting" || state.phase === "running") {
+          state.frameId = requestAnimationFrame(tick);
+        }
+      };
+
+      state.frameId = requestAnimationFrame(tick);
+    }
+
+    betBtn.addEventListener("click", placeBet);
+    cancelBtn.addEventListener("click", cancelBet);
+    cashBtn.addEventListener("click", () => cashOut(true));
+
+    betDecBtn.addEventListener("click", () => stepInput(betInput, -1));
+    betIncBtn.addEventListener("click", () => stepInput(betInput, 1));
+    autoDecBtn.addEventListener("click", () => stepInput(autoInput, -1));
+    autoIncBtn.addEventListener("click", () => stepInput(autoInput, 1));
+
+    autoOn.addEventListener("change", () => {
+      if (autoOn.checked) setAuto(true);
+    });
+
+    autoOff.addEventListener("change", () => {
+      if (autoOff.checked) setAuto(false);
+    });
+
+    window.addEventListener("resize", () => {
+      const elapsed = state.phase === "running" ? performance.now() - state.runStartAt : 0;
+      renderTrack(elapsed);
+    });
+
+    updateHistory();
+    updateStats();
+    updateAutoUI();
+    setWaiting();
+  </script>
+</body>
+
+</html>
+
+
+
+
+
